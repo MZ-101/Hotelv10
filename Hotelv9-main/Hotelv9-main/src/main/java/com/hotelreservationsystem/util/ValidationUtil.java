@@ -4,375 +4,305 @@ import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 /**
- * ValidationUtil - Business logic utility for input validation
- * Validates all user inputs according to hotel system rules
- * Ensures data integrity and prevents invalid data from entering the system
+ * ValidationUtil - Comprehensive Input Validation Utility
+ * 
+ * Provides all validation methods for user inputs including usernames,
+ * passwords, emails, phone numbers, dates, and payment information.
+ * 
+ * @author Hotel Reservation System Team
+ * @version 1.0.0
  */
 public class ValidationUtil {
-
-    // Regular expression patterns for validation
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{5,20}$");
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^(09|\\+639)\\d{9}$");
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z\\s'-]{2,50}$");
-    private static final Pattern ROOM_NUMBER_PATTERN = Pattern.compile("^[0-9]{1,3}[A-Z]?$");
-    private static final Pattern CARD_NUMBER_PATTERN = Pattern.compile("^[0-9]{13,19}$");
-    private static final Pattern CVV_PATTERN = Pattern.compile("^[0-9]{3,4}$");
-    private static final Pattern OTP_PATTERN = Pattern.compile("^[0-9]{6}$");
-
-    /**
-     * Validates username format
-     * Rules: 5-20 alphanumeric characters, underscore allowed, no spaces or special chars
-     * @param username Username to validate
-     * @return true if valid, false otherwise
-     */
+    
+    // ============ USERNAME VALIDATION ============
     public static boolean isValidUsername(String username) {
         if (username == null || username.isEmpty()) {
             return false;
         }
-        return USERNAME_PATTERN.matcher(username.trim()).matches();
+        return username.matches(Constants.REGEX_USERNAME);
     }
-
-    /**
-     * Validates password strength
-     * Rules: Minimum 8 characters, must contain uppercase, lowercase, and number
-     * @param password Password to validate
-     * @return true if password meets strength requirements, false otherwise
-     */
+    
+    public static String getUsernameErrorMessage(String username) {
+        if (username == null || username.isEmpty()) {
+            return "Username cannot be empty";
+        }
+        if (username.length() < Constants.USERNAME_MIN_LENGTH) {
+            return "Username must be at least " + Constants.USERNAME_MIN_LENGTH + " characters";
+        }
+        if (username.length() > Constants.USERNAME_MAX_LENGTH) {
+            return "Username must not exceed " + Constants.USERNAME_MAX_LENGTH + " characters";
+        }
+        if (!username.matches(Constants.REGEX_USERNAME)) {
+            return "Username can only contain letters, numbers, and underscores";
+        }
+        return "";
+    }
+    
+    // ============ PASSWORD VALIDATION ============
     public static boolean isValidPassword(String password) {
-        if (password == null || password.length() < 8) {
+        if (password == null || password.isEmpty()) {
             return false;
         }
-        // Check for at least one uppercase letter
-        if (!password.matches(".*[A-Z].*")) {
-            return false;
-        }
-        // Check for at least one lowercase letter
-        if (!password.matches(".*[a-z].*")) {
-            return false;
-        }
-        // Check for at least one digit
-        if (!password.matches(".*[0-9].*")) {
-            return false;
-        }
-        return true;
+        return isStrongPassword(password);
     }
-
-    /**
-     * Validates email format
-     * Standard email validation with @ and domain
-     * @param email Email address to validate
-     * @return true if valid email format, false otherwise
-     */
+    
+    public static boolean isStrongPassword(String password) {
+        if (password == null || password.length() < Constants.PASSWORD_MIN_LENGTH) {
+            return false;
+        }
+        
+        boolean hasUppercase = password.matches(".*[A-Z].*");
+        boolean hasLowercase = password.matches(".*[a-z].*");
+        boolean hasDigit = password.matches(".*[0-9].*");
+        
+        return hasUppercase && hasLowercase && hasDigit;
+    }
+    
+    public static String getPasswordErrorMessage(String password) {
+        if (password == null || password.isEmpty()) {
+            return "Password cannot be empty";
+        }
+        if (password.length() < Constants.PASSWORD_MIN_LENGTH) {
+            return "Password must be at least " + Constants.PASSWORD_MIN_LENGTH + " characters";
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            return "Password must contain at least one uppercase letter";
+        }
+        if (!password.matches(".*[a-z].*")) {
+            return "Password must contain at least one lowercase letter";
+        }
+        if (!password.matches(".*[0-9].*")) {
+            return "Password must contain at least one number";
+        }
+        return "";
+    }
+    
+    // ============ EMAIL VALIDATION ============
     public static boolean isValidEmail(String email) {
         if (email == null || email.isEmpty()) {
             return false;
         }
-        return EMAIL_PATTERN.matcher(email.trim()).matches();
+        return email.matches(Constants.REGEX_EMAIL);
     }
-
-    /**
-     * Validates Philippine mobile phone number format
-     * Rules: Must start with 09 or +639, total 11-12 digits
-     * Format: 09XXXXXXXXX or +639XXXXXXXXX
-     * @param phoneNumber Phone number to validate
-     * @return true if valid Philippine format, false otherwise
-     */
+    
+    public static String getEmailErrorMessage(String email) {
+        if (email == null || email.isEmpty()) {
+            return "Email cannot be empty";
+        }
+        if (!isValidEmail(email)) {
+            return "Please enter a valid email address";
+        }
+        return "";
+    }
+    
+    // ============ PHONE NUMBER VALIDATION ============
     public static boolean isValidPhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             return false;
         }
-        String trimmed = phoneNumber.trim();
-        // Remove spaces and hyphens
-        trimmed = trimmed.replaceAll("[\\s-]", "");
-        return PHONE_PATTERN.matcher(trimmed).matches();
+        return phoneNumber.matches(Constants.REGEX_PHONE);
     }
-
-    /**
-     * Validates a person's first name
-     * Rules: Letters only, 2-50 characters, no numbers or special characters
-     * @param firstName First name to validate
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidFirstName(String firstName) {
-        if (firstName == null || firstName.isEmpty()) {
-            return false;
+    
+    public static String getPhoneNumberErrorMessage(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return "Phone number cannot be empty";
         }
-        String trimmed = firstName.trim();
-        // Check if starts with space
-        if (firstName.startsWith(" ")) {
-            return false;
+        if (!isValidPhoneNumber(phoneNumber)) {
+            return "Phone number must be in format: 09XXXXXXXXX or +639XXXXXXXXX";
         }
-        // Only letters, spaces, hyphens, and apostrophes allowed
-        return trimmed.matches("^[a-zA-Z\\s'-]{2,50}$") && !trimmed.matches(".*\\d.*");
+        return "";
     }
-
-    /**
-     * Validates a person's last name
-     * Rules: Letters only, 2-50 characters, no numbers or special characters
-     * @param lastName Last name to validate
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidLastName(String lastName) {
-        if (lastName == null || lastName.isEmpty()) {
+    
+    // ============ NAME VALIDATION ============
+    public static boolean isValidName(String name) {
+        if (name == null || name.isEmpty()) {
             return false;
         }
-        String trimmed = lastName.trim();
-        // Check if starts with space
-        if (lastName.startsWith(" ")) {
-            return false;
-        }
-        // Only letters, spaces, hyphens, and apostrophes allowed
-        return trimmed.matches("^[a-zA-Z\\s'-]{2,50}$") && !trimmed.matches(".*\\d.*");
+        return name.length() >= 2 && name.length() <= 50 && name.matches(Constants.REGEX_LETTERS_ONLY);
     }
-
-    /**
-     * Validates a date to ensure it's not in the past
-     * @param date Date to validate
-     * @return true if date is today or in the future, false if in past
-     */
-    public static boolean isValidFutureDate(LocalDate date) {
-        if (date == null) {
+    
+    public static String getNameErrorMessage(String name) {
+        if (name == null || name.isEmpty()) {
+            return "Name cannot be empty";
+        }
+        if (name.length() < 2) {
+            return "Name must be at least 2 characters";
+        }
+        if (name.length() > 50) {
+            return "Name must not exceed 50 characters";
+        }
+        if (!name.matches(Constants.REGEX_LETTERS_ONLY)) {
+            return "Name can only contain letters and spaces";
+        }
+        return "";
+    }
+    
+    // ============ DATE VALIDATION ============
+    public static boolean isValidDate(LocalDate date) {
+        return date != null;
+    }
+    
+    public static boolean isValidDateRange(LocalDate checkInDate, LocalDate checkOutDate) {
+        if (checkInDate == null || checkOutDate == null) {
             return false;
         }
-        return !date.isBefore(LocalDate.now());
+        return checkInDate.isBefore(checkOutDate);
     }
-
-    /**
-     * Validates date of birth
-     * Rules: Must be a valid date, not in future, guest must be at least 18 years old
-     * @param dateOfBirth Date of birth to validate
-     * @return true if valid (guest is 18+), false otherwise
-     */
-    public static boolean isValidDateOfBirth(LocalDate dateOfBirth) {
-        if (dateOfBirth == null) {
-            return false;
+    
+    public static String getDateRangeErrorMessage(LocalDate checkInDate, LocalDate checkOutDate) {
+        if (checkInDate == null) {
+            return "Check-in date cannot be empty";
         }
-        // Cannot be in the future
-        if (dateOfBirth.isAfter(LocalDate.now())) {
-            return false;
+        if (checkOutDate == null) {
+            return "Check-out date cannot be empty";
         }
-        // Must be at least 18 years old
-        return DateUtil.isAdultAge(dateOfBirth);
-    }
-
-    /**
-     * Validates address field
-     * Rules: Not empty, maximum 255 characters
-     * @param address Address to validate
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidAddress(String address) {
-        if (address == null || address.trim().isEmpty()) {
-            return false;
+        if (checkInDate.isBefore(LocalDate.now())) {
+            return "Check-in date cannot be in the past";
         }
-        return address.length() <= 255;
-    }
-
-    /**
-     * Validates ID document number
-     * Rules: Minimum 5 characters, not empty
-     * @param idNumber ID document number to validate
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidIdNumber(String idNumber) {
-        if (idNumber == null || idNumber.trim().isEmpty()) {
-            return false;
+        if (checkOutDate.isBefore(LocalDate.now())) {
+            return "Check-out date cannot be in the past";
         }
-        return idNumber.trim().length() >= 5;
+        if (!checkInDate.isBefore(checkOutDate)) {
+            return "Check-out date must be after check-in date";
+        }
+        return "";
     }
-
-    /**
-     * Validates a date range for reservations
-     * Rules: Check-in and check-out both valid, check-out after check-in, check-in not in past
-     * @param checkInDate Check-in date
-     * @param checkOutDate Check-out date
-     * @return true if valid date range, false otherwise
-     */
-    public static boolean isValidReservationDateRange(LocalDate checkInDate, LocalDate checkOutDate) {
-        return DateUtil.isValidDateRange(checkInDate, checkOutDate);
-    }
-
-    /**
-     * Validates number of guests
-     * Rules: Minimum 1 guest, cannot exceed room capacity (10 max)
-     * @param numberOfGuests Number of guests
-     * @param roomCapacity Maximum room capacity
-     * @return true if valid, false otherwise
-     */
+    
+    // ============ NUMBER OF GUESTS VALIDATION ============
     public static boolean isValidNumberOfGuests(int numberOfGuests, int roomCapacity) {
-        return numberOfGuests >= 1 && numberOfGuests <= roomCapacity && roomCapacity >= 1 && roomCapacity <= 10;
+        return numberOfGuests >= 1 && numberOfGuests <= roomCapacity;
     }
-
-    /**
-     * Validates price range
-     * Rules: Minimum price >= 0, maximum price <= 999,999.99
-     * @param minPrice Minimum price to validate
-     * @param maxPrice Maximum price to validate
-     * @return true if valid price range, false otherwise
-     */
-    public static boolean isValidPriceRange(double minPrice, double maxPrice) {
-        return minPrice >= 0 && maxPrice <= 999999.99 && minPrice <= maxPrice;
+    
+    public static String getNumberOfGuestsErrorMessage(int numberOfGuests, int roomCapacity) {
+        if (numberOfGuests < 1) {
+            return "Number of guests must be at least 1";
+        }
+        if (numberOfGuests > roomCapacity) {
+            return "Number of guests cannot exceed room capacity of " + roomCapacity;
+        }
+        return "";
     }
-
-    /**
-     * Validates credit card number using Luhn algorithm
-     * Rules: 13-19 digits, must pass Luhn validation
-     * @param cardNumber Credit card number (digits only)
-     * @return true if valid format and passes Luhn check, false otherwise
-     */
-    public static boolean isValidCreditCard(String cardNumber) {
-        if (cardNumber == null || cardNumber.isEmpty()) {
-            return false;
-        }
-        String digits = cardNumber.replaceAll("[^0-9]", "");
-        // Check length (13-19 digits)
-        if (digits.length() < 13 || digits.length() > 19) {
-            return false;
-        }
-        // Luhn algorithm check
-        return luhnCheck(digits);
-    }
-
-    /**
-     * Validates credit card expiry date
-     * Rules: Format MM/YY or MM/YYYY, cannot be expired
-     * @param expiryDate Expiry date in MM/YY or MM/YYYY format
-     * @return true if valid and not expired, false otherwise
-     */
-    public static boolean isValidCardExpiry(String expiryDate) {
-        if (expiryDate == null || expiryDate.isEmpty()) {
-            return false;
-        }
-        try {
-            String[] parts = expiryDate.split("/");
-            if (parts.length != 2) {
-                return false;
-            }
-            int month = Integer.parseInt(parts[0]);
-            int year = Integer.parseInt(parts[1]);
-
-            // Validate month (1-12)
-            if (month < 1 || month > 12) {
-                return false;
-            }
-
-            // Handle 2-digit or 4-digit year
-            if (year < 100) {
-                year += 2000; // Assume 20xx for 2-digit years
-            }
-
-            // Check if not expired
-            LocalDate today = LocalDate.now();
-            LocalDate expiryMonthEnd = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
-            return !expiryMonthEnd.isBefore(today);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Validates CVV (Card Verification Value)
-     * Rules: 3 or 4 digits, numeric only
-     * @param cvv CVV code to validate
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidCVV(String cvv) {
-        if (cvv == null || cvv.isEmpty()) {
-            return false;
-        }
-        return CVV_PATTERN.matcher(cvv.trim()).matches();
-    }
-
-    /**
-     * Validates cardholder name
-     * Rules: Letters and spaces only, 3-50 characters
-     * @param cardholderName Cardholder name to validate
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidCardholderName(String cardholderName) {
-        if (cardholderName == null || cardholderName.isEmpty()) {
-            return false;
-        }
-        return cardholderName.trim().matches("^[a-zA-Z\\s]{3,50}$");
-    }
-
-    /**
-     * Validates OTP (One-Time Password)
-     * Rules: Exactly 6 digits, numeric only
-     * @param otp OTP to validate
-     * @return true if valid 6-digit OTP, false otherwise
-     */
-    public static boolean isValidOTP(String otp) {
-        if (otp == null || otp.isEmpty()) {
-            return false;
-        }
-        return OTP_PATTERN.matcher(otp.trim()).matches();
-    }
-
-    /**
-     * Validates payment amount
-     * Rules: Greater than 0, not exceeding 999,999.99 PHP
-     * @param amount Payment amount to validate
-     * @return true if valid, false otherwise
-     */
+    
+    // ============ PAYMENT VALIDATION ============
     public static boolean isValidPaymentAmount(double amount) {
         return amount > 0 && amount <= 999999.99;
     }
-
-    /**
-     * Validates room number format
-     * Rules: 1-3 digits, optional letter suffix (e.g., 101, 205A)
-     * @param roomNumber Room number to validate
-     * @return true if valid format, false otherwise
-     */
-    public static boolean isValidRoomNumber(String roomNumber) {
-        if (roomNumber == null || roomNumber.isEmpty()) {
+    
+    public static String getPaymentAmountErrorMessage(double amount) {
+        if (amount <= 0) {
+            return "Payment amount must be greater than 0";
+        }
+        if (amount > 999999.99) {
+            return "Payment amount exceeds maximum limit";
+        }
+        return "";
+    }
+    
+    // ============ CREDIT CARD VALIDATION ============
+    public static boolean isValidCreditCardNumber(String cardNumber) {
+        if (cardNumber == null || cardNumber.isEmpty()) {
             return false;
         }
-        return ROOM_NUMBER_PATTERN.matcher(roomNumber.trim()).matches();
+        
+        String cleaned = cardNumber.replaceAll("\\s+", "");
+        if (cleaned.length() < Constants.CREDIT_CARD_MIN_LENGTH || 
+            cleaned.length() > Constants.CREDIT_CARD_MAX_LENGTH) {
+            return false;
+        }
+        
+        if (!cleaned.matches("\\d+")) {
+            return false;
+        }
+        
+        return luhnAlgorithm(cleaned);
     }
-
-    /**
-     * Validates room price
-     * Rules: Must be positive, not exceeding 999,999.99 PHP
-     * @param price Room price per night
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidRoomPrice(double price) {
-        return price > 0 && price <= 999999.99;
-    }
-
-    /**
-     * Validates room capacity
-     * Rules: Between 1-10 guests
-     * @param capacity Room capacity
-     * @return true if valid, false otherwise
-     */
-    public static boolean isValidRoomCapacity(int capacity) {
-        return capacity >= 1 && capacity <= 10;
-    }
-
-    /**
-     * Luhn algorithm for credit card validation
-     * Validates the checksum of credit card numbers
-     * @param cardNumber Card number digits only
-     * @return true if passes Luhn check, false otherwise
-     */
-    private static boolean luhnCheck(String cardNumber) {
+    
+    private static boolean luhnAlgorithm(String cardNumber) {
         int sum = 0;
         boolean isSecond = false;
+        
         for (int i = cardNumber.length() - 1; i >= 0; i--) {
-            int digit = Integer.parseInt(String.valueOf(cardNumber.charAt(i)));
+            int digit = Character.getNumericValue(cardNumber.charAt(i));
+            
             if (isSecond) {
                 digit *= 2;
                 if (digit > 9) {
                     digit -= 9;
                 }
             }
+            
             sum += digit;
             isSecond = !isSecond;
         }
+        
         return sum % 10 == 0;
+    }
+    
+    public static String getCreditCardErrorMessage(String cardNumber) {
+        if (cardNumber == null || cardNumber.isEmpty()) {
+            return "Card number cannot be empty";
+        }
+        
+        String cleaned = cardNumber.replaceAll("\\s+", "");
+        if (cleaned.length() < Constants.CREDIT_CARD_MIN_LENGTH) {
+            return "Card number is too short";
+        }
+        if (cleaned.length() > Constants.CREDIT_CARD_MAX_LENGTH) {
+            return "Card number is too long";
+        }
+        if (!cleaned.matches("\\d+")) {
+            return "Card number must contain only digits";
+        }
+        if (!luhnAlgorithm(cleaned)) {
+            return "Invalid card number (Luhn check failed)";
+        }
+        return "";
+    }
+    
+    // ============ CVV VALIDATION ============
+    public static boolean isValidCVV(String cvv) {
+        if (cvv == null || cvv.isEmpty()) {
+            return false;
+        }
+        return cvv.length() >= Constants.CVV_LENGTH_MIN && 
+               cvv.length() <= Constants.CVV_LENGTH_MAX && 
+               cvv.matches("\\d+");
+    }
+    
+    public static String getCVVErrorMessage(String cvv) {
+        if (cvv == null || cvv.isEmpty()) {
+            return "CVV cannot be empty";
+        }
+        if (cvv.length() < Constants.CVV_LENGTH_MIN || cvv.length() > Constants.CVV_LENGTH_MAX) {
+            return "CVV must be " + Constants.CVV_LENGTH_MIN + " to " + Constants.CVV_LENGTH_MAX + " digits";
+        }
+        if (!cvv.matches("\\d+")) {
+            return "CVV must contain only numbers";
+        }
+        return "";
+    }
+    
+    // ============ OTP VALIDATION ============
+    public static boolean isValidOTP(String otp) {
+        if (otp == null || otp.isEmpty()) {
+            return false;
+        }
+        return otp.length() == Constants.OTP_LENGTH && otp.matches("\\d+");
+    }
+    
+    // ============ ID DOCUMENT VALIDATION ============
+    public static boolean isValidIDDocument(String idNumber) {
+        if (idNumber == null || idNumber.isEmpty()) {
+            return false;
+        }
+        return idNumber.length() >= Constants.ID_DOCUMENT_MIN_LENGTH;
+    }
+    
+    // ============ ADDRESS VALIDATION ============
+    public static boolean isValidAddress(String address) {
+        if (address == null || address.isEmpty()) {
+            return false;
+        }
+        return address.length() <= Constants.ADDRESS_MAX_LENGTH;
     }
 }

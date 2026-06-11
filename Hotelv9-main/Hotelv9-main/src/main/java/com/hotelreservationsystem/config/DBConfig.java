@@ -1,64 +1,83 @@
 package com.hotelreservationsystem.config;
 
+import com.hotelreservationsystem.util.Constants;
+import com.hotelreservationsystem.util.HotelException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Database Configuration Class
+ * DBConfig - Database Configuration and Connection Management
  * 
- * Manages database connection to MySQL through JDBC.
- * Handles connection pooling and configuration for the Hotel Reservation System.
+ * Handles database connection setup, initialization, and connection pooling.
+ * Provides static methods to get database connections using JDBC.
  * 
- * Configuration Details:
- * - Driver: MySQL Connector/J 8.0.33
- * - Database: hotelreservationsystem
- * - Host: localhost
- * - Port: 3306
- * - Charset: UTF-8
+ * @author Hotel Reservation System Team
+ * @version 1.0.0
  */
 public class DBConfig {
     
-    // Database connection parameters
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/hotelreservationsystem?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
-    private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static Connection connection;
     
     /**
-     * Establishes and returns a database connection
+     * Initialize database driver
      * 
-     * @return Connection object to the database
-     * @throws SQLException if connection fails
+     * @throws HotelException if driver cannot be loaded
      */
-    public static Connection getConnection() throws SQLException {
+    public static void initializeDriver() throws HotelException {
         try {
-            // Load MySQL JDBC Driver
-            Class.forName(DB_DRIVER);
-            
-            // Create and return connection
-            return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            Class.forName(Constants.DB_DRIVER);
         } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL JDBC Driver not found. Ensure mysql-connector-java is in classpath.", e);
-        } catch (SQLException e) {
-            throw new SQLException("Failed to connect to database at " + DB_URL, e);
+            throw new HotelException("Failed to load database driver: " + e.getMessage(), e);
         }
     }
     
     /**
-     * Tests the database connection
-     * Useful for debugging connection issues
+     * Get database connection
      * 
-     * @return true if connection is successful, false otherwise
+     * @return Connection object
+     * @throws HotelException if connection fails
+     */
+    public static Connection getConnection() throws HotelException {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(
+                    Constants.DB_URL,
+                    Constants.DB_USER,
+                    Constants.DB_PASSWORD
+                );
+            }
+            return connection;
+        } catch (SQLException e) {
+            throw new HotelException("Failed to establish database connection: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Close database connection
+     */
+    public static void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                connection = null;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error closing database connection: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Test database connection
+     * 
+     * @return true if connection is successful
      */
     public static boolean testConnection() {
         try {
-            Connection conn = getConnection();
-            boolean isValid = conn.isValid(5);
-            conn.close();
-            return isValid;
-        } catch (SQLException e) {
-            System.err.println("Connection test failed: " + e.getMessage());
+            Connection testConn = getConnection();
+            return testConn != null && !testConn.isClosed();
+        } catch (Exception e) {
+            System.err.println("Database connection test failed: " + e.getMessage());
             return false;
         }
     }
